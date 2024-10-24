@@ -4,12 +4,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentInput = '';
     let operator = '';
     let firstOperand = null;
+    let shouldResetDisplay = false;
 
     buttons.forEach(button => {
         button.addEventListener('click', function() {
             const value = this.textContent;
 
-            if (value >= '0' && value <= '9') {
+            if (value >= '0' && value <= '9' || value === '.') {
+                if (shouldResetDisplay) {
+                    currentInput = '';
+                    shouldResetDisplay = false;
+                }
+                if (value === '.' && currentInput.includes('.')) return;
                 currentInput += value;
                 display.textContent = currentInput;
             } else if (value === 'C') {
@@ -32,6 +38,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             result = firstOperand * secondOperand;
                             break;
                         case '/':
+                            if (secondOperand === 0) {
+                                display.textContent = 'Error';
+                                return;
+                            }
                             result = firstOperand / secondOperand;
                             break;
                     }
@@ -39,10 +49,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     currentInput = result.toString();
                     firstOperand = null;
                     operator = '';
+                    shouldResetDisplay = true;
                 }
             } else {
                 if (currentInput) {
-                    firstOperand = parseFloat(currentInput);
+                    if (firstOperand === null) {
+                        firstOperand = parseFloat(currentInput);
+                    } else if (operator) {
+                        const secondOperand = parseFloat(currentInput);
+                        switch (operator) {
+                            case '+':
+                                firstOperand += secondOperand;
+                                break;
+                            case '-':
+                                firstOperand -= secondOperand;
+                                break;
+                            case '*':
+                                firstOperand *= secondOperand;
+                                break;
+                            case '/':
+                                if (secondOperand === 0) {
+                                    display.textContent = 'Error';
+                                    return;
+                                }
+                                firstOperand /= secondOperand;
+                                break;
+                        }
+                    }
                     operator = value;
                     currentInput = '';
                 }
